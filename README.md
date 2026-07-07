@@ -101,6 +101,21 @@ Our application is designed to prevent unnecessary LLM costs and ensure high dat
                                   (Imported vs. Skipped)
 ```
 
+### 🛡️ Production-Grade Resilience & Multi-Provider Fallback
+To ensure high availability and prevent rate limits (`429`) or temporary provider outages from interrupting imports, our backend implements a robust **Multi-Provider Fallback Chain**:
+1. **Primary Model:** Gemini 2.0 Flash (via official SDK).
+2. **First Fallback:** Groq (`llama-3.3-70b-versatile`).
+3. **Second Fallback:** OpenRouter (`openrouter/free` load balancer).
+
+**Retry & Delay Mechanism:**
+* For every batch of 15 rows, the backend attempts extraction using the primary provider.
+* If a request fails, it **waits 2.5 seconds** (cooling down rate limits) and retries a second time.
+* If the second attempt fails, it cascades to Groq (trying up to 2 times with a 2.5s delay).
+* If Groq fails, it cascades to OpenRouter (trying up to 2 times with a 2.5s delay).
+* This provides up to **6 attempts** per batch across 3 different infrastructure layers before declaring a batch failed, ensuring maximum uptime.
+
+---
+
 For detailed notes on each component's internals, see the individual readmes:
 *   [Backend Technical Details](./backend/README.md)
 *   [Frontend Technical Details](./frontend/README.md)

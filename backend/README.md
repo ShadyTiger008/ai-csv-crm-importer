@@ -11,7 +11,7 @@ Instead of writing a single "fat" script or mixing API routing with LLM prompt c
 3. **Routing (`routes/import.routes.js`)**: Bare mapping of URI pathways to controller functions. Contains no logic.
 4. **Controllers (`controllers/import.controller.js`)**: Sanitizes HTTP input structures, validates the presence of raw parameters, and returns responses.
 5. **Orchestration Service (`services/csvImport.service.js`)**: Handles batching, executes calls in parallel, maps AI outputs back to raw rows, and aggregates counts.
-6. **AI Service (`services/ai.service.js`)**: Focuses on communicating with the Gemini SDK (`gemini-2.0-flash`), setting temperatures, and handling raw LLM retries.
+6. **AI Service (`services/ai.service.js`)**: Focuses on communicating with the AI models via a multi-provider fallback orchestrator, parsing structured JSON, and managing API retries/cooldowns.
 7. **Validation Service (`services/validation.service.js`)**: Holds Zod validation rules and checks records against granular business rules.
 8. **Prompt Builder (`prompts/extraction.prompt.js`)**: Builds prompt templates, few-shot examples, and embeds CSV headers dynamically to maximize the context-reasoning capability of the model.
 
@@ -34,9 +34,10 @@ Instead of writing a single "fat" script or mixing API routing with LLM prompt c
       ┌───┴──────────────────────────────────────┐
       ▼ (Concurrent Batches)                     ▼ (Concurrent Batches)
  [ai.service.js]                            [ai.service.js]
-  - Calls Gemini 2.0 Flash                   - Calls Gemini 2.0 Flash
-  - Enforces responseMimeType                - Enforces responseMimeType
-  - Retries once if JSON.parse fails         - Retries once if JSON.parse fails
+  - Runs multi-provider fallback chain       - Runs multi-provider fallback chain
+    (Gemini ➔ Groq ➔ OpenRouter)               (Gemini ➔ Groq ➔ OpenRouter)
+  - Retries each provider up to 2 times      - Retries each provider up to 2 times
+  - 2.5s delay backoff between retries       - 2.5s delay backoff between retries
       │                                          │
       ▼                                          ▼
 [validation.service.js]                    [validation.service.js]
@@ -60,8 +61,17 @@ Instead of writing a single "fat" script or mixing API routing with LLM prompt c
 ### 1. Chunking to Size 15
 A batch size of **15** is the sweet spot. It is small enough that if an input row is highly malformed or contains unexpected characters that break the model's parser, we only lose at most 15 leads in that batch (or retry them), rather than breaking a 500-lead import. It is also large enough to avoid making dozens of individual API requests (which would exhaust rate limits and run slowly).
 
-### 2. LLM Parse Retries
-If the Gemini API responds but the returned text cannot be parsed with `JSON.parse` (or is not a JSON array), the `ai.service.js` will catch the error and execute **exactly one retry**. A single retry is enough to recover from rare transient generation drops; more retries would degrade response times for the client.
+### 2. High-Availability Multi-Provider Fallback (Production Gate)
+To insulate our importer from external LLM outages, rate limits (`429`), or API quota issues, the system uses a tiered fallback orchestrator:
+1. **Primary Model:** Gemini 2.0 Flash (official `@google/genai` SDK)
+2. **Secondary Model:** Groq (`llama-3.3-70b-versatile` via direct HTTP endpoints)
+3. **Tertiary Model:** OpenRouter (`openrouter/free` load balancer model via direct HTTP endpoints)
+
+For each batch, the system attempts to extract the CRM data from the primary provider. If the request fails or returns invalid JSON:
+* It waits for **2.5 seconds** (cooling down transient rate limits) and attempts the request with Gemini a second time.
+* If the second attempt fails, it cascades to Groq and attempts the request up to **2 times** (with a 2.5s cooldown).
+* If Groq fails, it cascades to OpenRouter and tries it up to **2 times** (with a 2.5s cooldown).
+* Only if all 3 providers (6 total attempts) fail does the batch fail completely, executing the graceful degradation skip handler.
 
 ### 3. Graceful Batch Degradation
 If a batch fails completely (e.g., rate limits hit, network drop, or Gemini fails twice in a row), we catch that exception at the batch level. The backend **does not crash** and does not fail the whole import. Instead, all 15 rows from that batch are immediately appended to the `skipped` list with a reason detailed as `"AI processing failed after retry"`. This allows other batches to succeed and gives the user their partial import results.
