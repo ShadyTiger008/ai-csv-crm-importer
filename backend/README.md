@@ -1,0 +1,80 @@
+# AI CSV CRM Importer - Backend Service
+
+This directory houses the Node.js / Express backend service that handles raw row processing, AI mapping, schema extraction, and business rule enforcement.
+
+## Why this Architecture?
+
+Instead of writing a single "fat" script or mixing API routing with LLM prompt configuration, this project uses a strict **Layered Architecture**. Each component has a single, isolated responsibility, making the system easy to test, trace, and maintain:
+
+1. **Bootstrap (`index.js`)**: Purely initializes the HTTP listener and handles process signals (SIGINT/SIGTERM) for graceful shutdowns.
+2. **Setup (`app.js`)**: Registers core middleware (CORS, body parser size limits to handle large uploads, request logging) and defines routing bounds.
+3. **Routing (`routes/import.routes.js`)**: Bare mapping of URI pathways to controller functions. Contains no logic.
+4. **Controllers (`controllers/import.controller.js`)**: Sanitizes HTTP input structures, validates the presence of raw parameters, and returns responses.
+5. **Orchestration Service (`services/csvImport.service.js`)**: Handles batching, executes calls in parallel, maps AI outputs back to raw rows, and aggregates counts.
+6. **AI Service (`services/ai.service.js`)**: Focuses on communicating with the Gemini SDK (`gemini-2.0-flash`), setting temperatures, and handling raw LLM retries.
+7. **Validation Service (`services/validation.service.js`)**: Holds Zod validation rules and checks records against granular business rules.
+8. **Prompt Builder (`prompts/extraction.prompt.js`)**: Builds prompt templates, few-shot examples, and embeds CSV headers dynamically to maximize the context-reasoning capability of the model.
+
+---
+
+## Request Lifecycle Flow Chart
+
+```text
+[Client POST /api/import]
+          │
+          ▼
+   [import.routes.js]  (Router definition)
+          │
+          ▼
+ [import.controller.js] (Checks for 'rows' payload, manages req/res)
+          │
+          ▼
+[csvImport.service.js]  (Chunks rows into batches of 15; maps parallel promises)
+          │
+      ┌───┴──────────────────────────────────────┐
+      ▼ (Concurrent Batches)                     ▼ (Concurrent Batches)
+ [ai.service.js]                            [ai.service.js]
+  - Calls Gemini 2.0 Flash                   - Calls Gemini 2.0 Flash
+  - Enforces responseMimeType                - Enforces responseMimeType
+  - Retries once if JSON.parse fails         - Retries once if JSON.parse fails
+      │                                          │
+      ▼                                          ▼
+[validation.service.js]                    [validation.service.js]
+  - Zod structural validation                - Zod structural validation
+  - Normalizes created_at dates              - Normalizes created_at dates
+  - Splits multiple emails/phones            - Splits multiple emails/phones
+  - Checks status/source enums               - Checks status/source enums
+  - Skip rule (no email AND no phone)        - Skip rule (no email AND no phone)
+      │                                          │
+      └──────────────────┬───────────────────────┘
+                         ▼
+             [csvImport.service.js]
+              - Aggregates batch totals (imported & skipped lists)
+              - Returns payload to controller
+```
+
+---
+
+## Batching, Resilience & Error Handling
+
+### 1. Chunking to Size 15
+A batch size of **15** is the sweet spot. It is small enough that if an input row is highly malformed or contains unexpected characters that break the model's parser, we only lose at most 15 leads in that batch (or retry them), rather than breaking a 500-lead import. It is also large enough to avoid making dozens of individual API requests (which would exhaust rate limits and run slowly).
+
+### 2. LLM Parse Retries
+If the Gemini API responds but the returned text cannot be parsed with `JSON.parse` (or is not a JSON array), the `ai.service.js` will catch the error and execute **exactly one retry**. A single retry is enough to recover from rare transient generation drops; more retries would degrade response times for the client.
+
+### 3. Graceful Batch Degradation
+If a batch fails completely (e.g., rate limits hit, network drop, or Gemini fails twice in a row), we catch that exception at the batch level. The backend **does not crash** and does not fail the whole import. Instead, all 15 rows from that batch are immediately appended to the `skipped` list with a reason detailed as `"AI processing failed after retry"`. This allows other batches to succeed and gives the user their partial import results.
+
+### 4. Date Normalization & Multi-Contact Sorting
+Rather than relying on the LLM to format dates and split values, the validation service handles this deterministically:
+- Dates matching `DD/MM/YYYY` or `DD-MM-YYYY` formats (which fail JS standard parsing) are automatically reformatted to `YYYY-MM-DD` and verified. If they are still invalid, the field is cleared (`null`), but the record is **kept**.
+- If multiple emails or phone numbers are squeezed into a single cell, the first is extracted as the main value, and the subsequent ones are parsed and appended to `crm_note` to ensure zero information loss.
+- Records lacking both an email and a phone number are filtered to `skipped` with a clear contact-missing explanation.
+
+---
+
+## Known Limitations
+
+- **Concurrency Rate Limits**: For files with 2,000+ rows, running `Promise.all` directly on 130+ batches concurrently could hit Gemini API concurrent request or RPM (Requests Per Minute) limits. In a true enterprise-scale deployment, this would be throttled using a concurrency queue (like `p-limit`) or handled asynchronously using background jobs with webhooks.
+- **Ambiguous Column Name Tracing**: If a user uploads a column named "Data" or "Info" containing a mix of notes and other values, the model will attempt its best translation. However, if there are no helper values, it might drop it into `crm_note`.
