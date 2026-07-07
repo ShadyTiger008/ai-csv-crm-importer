@@ -5,6 +5,7 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { CheckCircle2, XCircle, FileText } from "lucide-react";
+import ErrorAlert from "../ui/ErrorAlert";
 
 interface PreviewTableProps {
   headers: string[];
@@ -12,6 +13,8 @@ interface PreviewTableProps {
   onConfirm: () => Promise<void>;
   onCancel: () => void;
   isLoading: boolean;
+  error: string | null;
+  onClearError: () => void;
 }
 
 export default function PreviewTable({
@@ -20,6 +23,8 @@ export default function PreviewTable({
   onConfirm,
   onCancel,
   isLoading,
+  error,
+  onClearError,
 }: PreviewTableProps) {
   // Generate columns dynamically based on parsed headers
   const columns = useMemo(() => {
@@ -47,6 +52,13 @@ export default function PreviewTable({
 
   return (
     <div className="space-y-6 w-full max-w-6xl mx-auto">
+      {error && (
+        <ErrorAlert
+          title="Import Failed"
+          message={error}
+          onClear={onClearError}
+        />
+      )}
       {/* Table Metadata Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-md">
         <div className="flex items-center space-x-3">

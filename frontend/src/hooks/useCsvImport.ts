@@ -16,6 +16,7 @@ export interface UseCsvImportResult {
   onFileSelect: (file: File) => Promise<void>;
   onConfirmImport: () => Promise<void>;
   onReset: () => void;
+  clearError: () => void;
 }
 
 export function useCsvImport(): UseCsvImportResult {
@@ -88,6 +89,10 @@ export function useCsvImport(): UseCsvImportResult {
     setError(null);
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     step,
     fileName,
@@ -99,5 +104,6 @@ export function useCsvImport(): UseCsvImportResult {
     onFileSelect,
     onConfirmImport,
     onReset,
+    clearError,
   };
 }

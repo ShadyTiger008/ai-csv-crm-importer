@@ -30,6 +30,7 @@ export default function Home() {
     onFileSelect,
     onConfirmImport,
     onReset,
+    clearError,
   } = useCsvImport();
 
   const [loadingStatusIdx, setLoadingStatusIdx] = useState(0);
@@ -110,6 +111,8 @@ export default function Home() {
               onConfirm={onConfirmImport}
               onCancel={onReset}
               isLoading={isLoading}
+              error={error}
+              onClearError={clearError}
             />
           </div>
         )}

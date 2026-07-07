@@ -1,6 +1,5 @@
 import { type ImportResponse } from "~/types/crm";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+import { API_CONFIG } from "~/config/api.config";
 
 /**
  * Sends parsed CSV rows to the Express backend importer.
@@ -9,8 +8,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
  * @returns The structured API response from the server containing imported and skipped list.
  */
 export async function sendCsvRowsToBackend(rows: Record<string, unknown>[]): Promise<ImportResponse> {
+  const targetUrl = `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.import}`;
+  
   try {
-    const response = await fetch(`${API_URL}/api/import`, {
+    const response = await fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -20,7 +21,7 @@ export async function sendCsvRowsToBackend(rows: Record<string, unknown>[]): Pro
 
     if (!response.ok) {
       const errorJson = await response.json().catch(() => null);
-      const errorMessage = errorJson?.error || `Request failed with status ${response.status}`;
+      const errorMessage = errorJson?.error || `Request failed with status ${response.status} (${response.statusText})`;
       throw new Error(errorMessage);
     }
 
@@ -28,6 +29,11 @@ export async function sendCsvRowsToBackend(rows: Record<string, unknown>[]): Pro
     return data;
   } catch (error) {
     console.error("sendCsvRowsToBackend error:", error);
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      throw new Error(
+        `Failed to connect to the backend server. Please verify that the API server is running and accessible at "${API_CONFIG.baseUrl}" and CORS is correctly configured.`
+      );
+    }
     throw error;
   }
 }
