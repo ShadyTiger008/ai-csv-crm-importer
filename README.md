@@ -13,6 +13,30 @@ This project is organized as a monorepo containing two main applications:
 
 ---
 
+## 📸 Application UI Walkthrough
+
+### 1. Upload Interface (Drag & Drop)
+The home screen features a premium, responsive upload zone supporting drag-and-drop or file system browsing. It contains helpful formatting documentation below to guide users.
+![Upload Interface](./screenshots/01-upload-page.png)
+
+### 2. Interactive Spreadsheet Preview
+Once a CSV is parsed client-side (saving server costs), a high-density preview table is displayed. It handles horizontal and vertical scrolling dynamically, allowing the user to review raw rows before confirming the import.
+![Spreadsheet Preview](./screenshots/02-preview-page.png)
+
+### 3. Batch Loading State
+When the import is confirmed, the frontend displays an interactive progress state while the backend processes leads concurrently in optimal batch sizes (15 rows per batch) to avoid rate limits.
+![Batch Loading State](./screenshots/03-loading-page.png)
+
+### 4. Imported Leads Dashboard
+On completion, the system shows stats cards (Leads Imported, Rows Skipped, and Success Rate). The **Imported** tab lists all sanitized records with normalized dates, country codes separated from phone numbers, and multiple contacts parsed into the notes.
+![Imported Leads Dashboard](./screenshots/04-results-imported.png)
+
+### 5. Skipped Leads & Diagnostics
+The **Skipped** tab lists rows that were unimportable (lacking both email and phone number). It highlights the exact row indices and provides human-friendly reasons with an option to see the raw record parameters.
+![Skipped Leads Diagnostics](./screenshots/05-results-skipped.png)
+
+---
+
 ## ⚡ Prerequisites
 
 *   **Node.js**: `v18.x` or higher
