@@ -80,3 +80,28 @@ Our application is designed to prevent unnecessary LLM costs and ensure high dat
 For detailed notes on each component's internals, see the individual readmes:
 *   [Backend Technical Details](./backend/README.md)
 *   [Frontend Technical Details](./frontend/README.md)
+
+---
+
+## 🧪 Testing with the Benchmark Dataset
+
+We have generated a comprehensive benchmark dataset file **[`groweasy-test-leads.csv`](./groweasy-test-leads.csv)** in the project root. This dataset has been engineered with realistic messy rows to verify all functional requirements and edge cases outlined in the GrowEasy assignment:
+
+### 📋 Edge Cases Included:
+1. **Messy & Diverse Headers:** The file utilizes non-standard headers (like `Lead Date`, `Client Name`, `Phone Number`, `Alternative Phone`, `Desired Move-in Time`, `Data Origin`) to verify that the AI maps them correctly to our CRM fields.
+2. **Date Normalization:** Dates formatted as `2026/05/15`, `May 16 2026 16:45:10`, and `17/05/2026` are automatically parsed and normalized to JavaScript-compatible formats by the validation service.
+3. **Allowed Status Mappings:** Inputs like `"Needs Follow Up"` map to `GOOD_LEAD_FOLLOW_UP`, `"Junk"` maps to `BAD_LEAD`, and `"Deal Closed"` maps to `SALE_DONE`.
+4. **Allowed Data Source Mappings:** Data origins like `"Meridian Tower"` map to `meridian_tower` and `"Sarjapur Plot Sales"` map to `sarjapur_plots`.
+5. **Multi-Contact Parsing:** Rows containing multiple emails (`sarah.j@techsolutions.com, info@techsolutions.com`) or multiple phone numbers (`+91 88888 77777 / +91 77777 66666`) have the secondary contacts stripped out and cleanly appended to the `crm_note` field.
+6. **Automatic Skips:** Rows containing no email and no phone number (e.g. Row Index #8 and #15) are skipped, listing `Missing contact details` as the reason.
+
+### 👣 How to Test:
+1. Boot up both development servers (`npm run dev:frontend` and `npm run dev:backend`).
+2. Open `http://localhost:3000` in your browser.
+3. Drag-and-drop or select **`groweasy-test-leads.csv`** from the project root.
+4. Verify the **Interactive Preview Table** displays all columns and is scrollable horizontally/vertically.
+5. Click **Confirm Import** to trigger the AI processing.
+6. Review the **Results Dashboard**:
+   * **Imported Tab:** Shows beautifully formatted cards (mobile) or rows (desktop) with normalized dates and extracted values.
+   * **Skipped Tab:** Lists the skipped rows (e.g. `Invalid Lead - No Contacts` and `Toby Flenderson`) with their respective indices and clear skip reasons.
+

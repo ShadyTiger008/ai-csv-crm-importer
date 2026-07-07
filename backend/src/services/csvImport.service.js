@@ -36,17 +36,27 @@ export async function importCsvData(rows) {
   // Run all batches concurrently
   const batchPromises = batches.map(async (batchRows, index) => {
     try {
+      // Map batch rows to include a tracking relative __row_index
+      const batchRowsWithIndex = batchRows.map((row, i) => ({
+        ...row,
+        __row_index: i,
+      }));
+
       // 1. Get AI extraction results for this batch
-      const aiRecords = await extractCrmRecords(headers, batchRows);
+      const aiRecords = await extractCrmRecords(headers, batchRowsWithIndex);
 
       const imported = [];
       const skipped = [];
 
       // 2. Validate and sanitize each extracted record
-      // Note: We use the index to align the AI output with the raw input row for tracking skipped records.
+      // Match the extracted AI output back to the raw input row using the relative __row_index
       for (let i = 0; i < batchRows.length; i++) {
         const rawRow = batchRows[i];
-        const extractedRecord = aiRecords[i];
+        
+        // Look up by matching __row_index (loose comparison to handle strings vs numbers)
+        const extractedRecord = aiRecords.find(
+          (rec) => rec && (rec.__row_index == i)
+        ) || aiRecords[i];
 
         if (!extractedRecord) {
           skipped.push({

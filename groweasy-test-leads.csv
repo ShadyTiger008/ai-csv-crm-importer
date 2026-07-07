@@ -1,0 +1,26 @@
+Lead Date,Client Name,Primary Email,Secondary Email,Phone Number,Alternative Phone,Company Name,City Name,State/Province,Country Name,Representative,Lead Stage,Data Origin,Desired Move-in Time,Notes
+2026-05-13 14:20:48,John Doe,john.doe@example.com,,+91 9876543210,,GrowEasy,Mumbai,Maharashtra,India,varun@groweasy.ai,Needs Follow Up,On Demand Leads,,Wants to schedule a follow-up call tomorrow at 4 PM
+2026-05-14 09:15:30,Sarah Jenkins,sarah.j@techsolutions.com,info@techsolutions.com,+919876543211,+919876543299,Tech Solutions,Bangalore,Karnataka,India,sales@groweasy.ai,Junk / Not Interested,Meridian Tower,2026-12-01,"Busy with other projects, told us not to call back"
+2026/05/15 11:30:00,Rajesh Kumar,rajesh.kumar@startup.in,,9876543212,,Startup Inc,Delhi,Delhi,India,test@gmail.com,Deal Closed,eden_park,,Onboarding scheduled for next Monday
+May 16 2026 16:45:10,Priya Sharma,priya.s@enterprise.co,priya.personal@gmail.com,7777766666,,,Pune,Maharashtra,India,,Connected - No Answer,Eden Park Project,,Spoke to assistant; will try calling directly next week
+17/05/2026,David Miller,david.miller@gmail.com,,+1 555-019-2834,,Global Trade,New York,New York,USA,varun@groweasy.ai,Follow Up,varah_swamy,,Interested in 2BHK layouts
+2026-05-18,Elena Rostova,elena.r@agency.com,,,+7 901 123-45-67,Rostova Agency,Moscow,,Russia,,No Connection,Sarjapur Plot Sales,,Left voicemail
+19-05-2026,Amit Patel,,,+91 98765 43215,,Patel & Sons,Ahmedabad,Gujarat,India,sales@groweasy.ai,Needs Follow Up,sarjapur_plots,,Has a budget of 1.5 Cr
+2026-05-20,Invalid Lead - No Contacts,,,,,,Kolkata,West Bengal,India,,Needs Follow Up,leads_on_demand,,This row has no email and no phone; it should be skipped
+2026-05-21 10:00:00,,only.email@example.com,,,,,,Karnataka,,,Follow Up,,,This row has no name but has email; should be imported as Unnamed Lead
+,,only.phone@example.com,,+91 90000 88888,,,,,,,Junk / Not Interested,,,,This row has no date or name but has contact info; should import
+2026-05-22 15:30:22,Michael Chang,michael.c@gmail.com; mchang@work.com,,+852 2345 6789,,Chang Logistics,Hong Kong,,Hong Kong,,Deal Closed,varah_swamy,Immediate,Both personal and work email provided
+2026-05-23,Anita Desai,anita@desai.com,,+91 88888 77777 / +91 77777 66666,,,,Maharashtra,,,Follow Up,Sarjapur Plot Sales,,Two phone numbers provided in Alternative Phone column
+2026-05-24,Robert Vance,bob.vance@vancerefrigeration.com,,+1-202-555-0143,,Vance Refrigeration,Scranton,Pennsylvania,USA,,Junk / Not Interested,eden_park,,Not interested in property purchases
+2026-05-25,Kelly Kapoor,kelly.k@dundermifflin.com,,555-0178,,Dunder Mifflin,Scranton,Pennsylvania,USA,,Needs Follow Up,Meridian Tower,Next 3 Months,Very talkative; wants to get pricing info ASAP
+2026-05-26,Toby Flenderson,,,,,,Scranton,Pennsylvania,USA,,Junk / Not Interested,varah_swamy,,No contact channels; should be skipped
+2026-05-27,Jim Halpert,jim.halpert@dundermifflin.com,,555-0199,,Dunder Mifflin,Scranton,Pennsylvania,USA,,Deal Closed,varah_swamy,,Purchased a plot in Sarjapur
+2026-05-28,Pam Beesly,pam.b@dundermifflin.com,,555-0120,,Dunder Mifflin,Scranton,Pennsylvania,USA,,Needs Follow Up,varah_swamy,Immediate,Interested in design consultations
+2026-05-29,Dwight Schrute,dwight.schrute@schrutebeets.com,,555-0149,,Schrute Farms,Scranton,Pennsylvania,USA,,Needs Follow Up,leads_on_demand,,Wants to use plots for beet farming
+2026-05-30,Ryan Howard,ryan@temp.com,,555-0155,,Dunder Mifflin,Scranton,Pennsylvania,USA,,No Connection,Sarjapur Plot Sales,,Temp worker; check back later
+2026-05-31,Angela Martin,angela.m@dundermifflin.com,,555-0162,,Dunder Mifflin,Scranton,Pennsylvania,USA,,Needs Follow Up,eden_park,,Wants a secure gated community for her cats
+2026-06-01,Oscar Martinez,oscar.m@dundermifflin.com,,555-0175,,Dunder Mifflin,Scranton,Pennsylvania,USA,,Needs Follow Up,eden_park,,Analyzing financial sheets; expects ROI data
+2026-06-02,Kevin Malone,kevin.m@dundermifflin.com,,555-0180,,Dunder Mifflin,Scranton,Pennsylvania,USA,,No Connection,sarjapur_plots,,Spilled chili; call back later
+2026-06-03,Stanley Hudson,stanley.h@dundermifflin.com,,555-0188,,Dunder Mifflin,Scranton,Pennsylvania,USA,,Junk / Not Interested,leads_on_demand,,Doing crossword puzzle; do not call
+2026-06-04,Phyllis Vance,phyllis.v@dundermifflin.com,,555-0190,,Vance Refrigeration,Scranton,Pennsylvania,USA,,Needs Follow Up,sarjapur_plots,,Interested in quiet plots near lake
+2026-06-05,Creed Bratton,creed@unknown.com,,555-0192,,,,,,Junk / Not Interested,leads_on_demand,,Unusual conversation; check legitimacy

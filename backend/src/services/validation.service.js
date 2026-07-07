@@ -59,7 +59,7 @@ export function validateAndSanitizeRecord(rawRecord) {
   const schemaKeys = new Set([
     "created_at", "name", "email", "country_code", "mobile_without_country_code",
     "company", "city", "state", "country", "lead_owner", "crm_status",
-    "crm_note", "data_source", "possession_time", "description"
+    "crm_note", "data_source", "possession_time", "description", "__row_index"
   ]);
 
   const extraItems = [];
