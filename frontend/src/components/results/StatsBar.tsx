@@ -32,7 +32,7 @@ export default function StatsBar({ importedCount, skippedCount, onReset }: Stats
       </div>
 
       {/* Grid of Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {/* Success Card */}
         <div className="p-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-sm shadow-xl flex items-center space-x-4">
           <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">

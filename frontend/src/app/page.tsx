@@ -49,7 +49,7 @@ export default function Home() {
   }, [step]);
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-100 flex flex-col relative overflow-hidden select-none">
+    <div className="min-h-screen bg-[#0B0F19] text-slate-100 flex flex-col relative overflow-hidden">
       {/* Decorative Glowing Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-violet-600/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
